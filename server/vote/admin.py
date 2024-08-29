@@ -31,5 +31,5 @@ class WinnerAdmin(admin.ModelAdmin):
 admin.site.register(Winner,WinnerAdmin)
 
 class HistoryAdmin(admin.ModelAdmin):
-    list_display = ["id","winner"]
+    list_display = ["id","winner","date"]
 admin.site.register(History,HistoryAdmin)

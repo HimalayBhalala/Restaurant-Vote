@@ -61,10 +61,11 @@ function ShowRestaurant({ isAuthenticated }) {
             alert('Authentication error. Please log in again.');
             return;
         }
-
+        setLoading(true);
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/restaurant/vote/${restaurantId}/${customerId}/`,{},
+                `${process.env.REACT_APP_API_URL}/restaurant/vote/${restaurantId}/${customerId}/`,
+                {}, 
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -72,6 +73,7 @@ function ShowRestaurant({ isAuthenticated }) {
                     },
                 }
             );
+
             if (response.status === 200) {
                 setRestaurantData((prevData) =>
                     prevData.map((restaurant) =>
@@ -80,6 +82,7 @@ function ShowRestaurant({ isAuthenticated }) {
                             : restaurant
                     )
                 );
+
                 setVoteStatus((prevStatus) => ({
                     ...prevStatus,
                     [restaurantId]: true,
@@ -92,6 +95,8 @@ function ShowRestaurant({ isAuthenticated }) {
                 console.error('Error during voting:', error);
                 alert('An error occurred while processing your vote. Please try again later.');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -134,7 +139,7 @@ function ShowRestaurant({ isAuthenticated }) {
                                         className="action-btn"
                                         onClick={() => handleVote(restaurant.id)}
                                     >
-                                        {loading ? 'Voting...' : 'Vote'}
+                                        Vote()
                                     </button>
                                 </td>
                             </tr>

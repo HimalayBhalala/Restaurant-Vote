@@ -67,6 +67,20 @@ class getVoteResturant(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get(self,request,restaurant_id, customer_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+            customer = Customer.objects.get(id=customer_id)
+        except Restaurant.DoesNotExist:
+            return Response({"message": "Restaurant not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Customer.DoesNotExist:
+            return Response({"message": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        vote = Vote.objects.filter(restaurant=restaurant,customer=customer)
+        vote_serializer = VoteSerializer(vote,many=True)
+
+        return Response({"data":vote_serializer.data},status=status.HTTP_200_OK)
+
     def post(self, request, restaurant_id, customer_id):
         try:
             restaurant = Restaurant.objects.get(id=restaurant_id)
@@ -119,6 +133,7 @@ class getVoteResturant(APIView):
         sorted_restaurants = sorted(restaurant_scores.items(), key=lambda x: (x[1]['score'], len(x[1]['customer_count'])), reverse=True)
         if sorted_restaurants:
             top_restaurant_id = sorted_restaurants[0][0]
+            print(top_restaurant_id)
             Winner.objects.create(restaurant_id=top_restaurant_id, date=today)
 
 class WinnerHistory(APIView):
