@@ -123,7 +123,7 @@ class getVoteResturant(APIView):
 
 class WinnerHistory(APIView):
     def get(self, request, *args, **kwargs):
-        latest_winner = Winner.objects.all().order_by("-date").first()
+        latest_winner = Winner.objects.all().order_by("date").latest('id')
         if not latest_winner:
             return Response({"message": "No winners found"}, status=status.HTTP_404_NOT_FOUND)
         

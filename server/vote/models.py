@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from authentication.models import Boss, Customer
+from datetime import date
 
 class Restaurant(models.Model):
     boss = models.ForeignKey(Boss, on_delete=models.CASCADE, blank=True, null=True)
@@ -27,3 +28,4 @@ class Winner(models.Model):
     
 class History(models.Model):
     winner = models.ForeignKey(Winner,on_delete=models.CASCADE,blank=True,null=True)
+    date = models.DateField(default=timezone.now)

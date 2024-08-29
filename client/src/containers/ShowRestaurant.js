@@ -64,7 +64,7 @@ function ShowRestaurant({ isAuthenticated }) {
 
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/restaurant/vote/${restaurantId}/${customerId}/`,
+                `${process.env.REACT_APP_API_URL}/restaurant/vote/${restaurantId}/${customerId}/`,{},
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -133,7 +133,6 @@ function ShowRestaurant({ isAuthenticated }) {
                                     <button
                                         className="action-btn"
                                         onClick={() => handleVote(restaurant.id)}
-                                        disabled={voteStatus[restaurant.id] || loading}
                                     >
                                         {loading ? 'Voting...' : 'Vote'}
                                     </button>
