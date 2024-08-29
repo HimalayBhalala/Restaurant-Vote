@@ -1,0 +1,77 @@
+body{
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Styles for container */
+.container {
+  padding: 20px;
+}
+
+/* Title styling */
+.title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Button styling */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  text-decoration: none;
+}
+
+.btn-success {
+  background-color: #28a745;
+}
+
+.btn-primary {
+  background-color: #007bff;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+}
+
+.ms-2 {
+  margin-left: 0.5rem;
+}
+
+/* Table styling */
+.restaurant-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.restaurant-table th,
+.restaurant-table td {
+  border: 1px solid #dee2e6;
+  padding: 8px;
+  text-align: center;
+}
+
+.vote-status-row th {
+  width: 50px;
+}
+
+/* Centered text */
+.text-center {
+  text-align: center;
+}
+
+/* End alignment */
+.text-end {
+  text-align: end;
+}
+
+/* Action button styling */
+.action-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
