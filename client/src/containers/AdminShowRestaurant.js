@@ -1,26 +1,19 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { RestaurantContext } from '../context/RestaurantContext';
 
-function AdminShowRestaurant({boss}) {
-    const boss_id = boss.id
-    const [restaurantData, setRestaurantData] = useState([]);
+function AdminShowRestaurant({isAuthenticated}) {
+    const boss_id = localStorage.getItem('boss_id')
+    const { restaurantData, setRestaurantData } = useContext(RestaurantContext);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchRestaurantData = async () => {
-            try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/restaurant/all/`);
-                if (response.status === 200) {
-                    setRestaurantData(response.data);
-                }
-            } catch (error) {
-                console.error("Error occurred during fetching the API. Please check the network or API URL.", error);
-            }
-        };
-        fetchRestaurantData();
-    }, []);
+        if(!isAuthenticated){
+            navigate("/login")
+        }
+    },[isAuthenticated,navigate])
 
     const deleteRestaurant = async (bossId,restaurant_id) => {
         try {
@@ -34,10 +27,11 @@ function AdminShowRestaurant({boss}) {
 
     return (
         <div className="container">
+            {console.log("check",boss_id)}
             <h1 className="title">Restaurant List</h1>
             <hr />
             <div className="text-end mb-4">
-                <Link className="btn btn-success" to={`/add/new/restuarant/${boss_id}/`}>
+                <Link className="btn btn-success" to={`/add/new/restaurant/${boss_id}/`}>
                     Add New Restaurant
                 </Link>
             </div>
@@ -60,7 +54,7 @@ function AdminShowRestaurant({boss}) {
                                 <td className="text-center">{restaurant.name}</td>
                                 <td className="text-center">{restaurant.vote_total.total_vote}</td>
                                 <td className="text-center">
-                                    <Link className="btn btn-primary ms-2" to={`/edit/restuarant/${boss_id}/${restaurant?.id}`}>Edit</Link>
+                                    <Link className="btn btn-primary ms-2" to={`/edit/restaurant/${boss_id}/${restaurant?.id}`}>Edit</Link>
                                     <button className="btn btn-danger ms-2" onClick={() => deleteRestaurant(boss_id, restaurant.id)}>Delete</button>
                                 </td>
                             </tr>
@@ -73,7 +67,7 @@ function AdminShowRestaurant({boss}) {
 }
 
 const mapStateToProps = (state) => ({
-    boss : state.auth.boss
-})
+    isAuthenticated: state.auth.isAuthenticated,
+});
 
-export default connect(mapStateToProps)(AdminShowRestaurant)
+export default connect(mapStateToProps)(AdminShowRestaurant);

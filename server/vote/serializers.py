@@ -1,11 +1,16 @@
 from rest_framework import serializers
 from .models import Restaurant,Vote,Winner,History
+import datetime
 
-    
 class VoteSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField()
     class Meta:
         model = Vote
-        fields = ["id","customer","restaurant","vote","date"]
+        fields = ["id","customer","restaurant","vote","date","customer_name"]
+
+    def get_customer_name(self,obj):
+        user = obj.customer.user
+        return user.first_name
 
 class RestaurantSerializer(serializers.ModelSerializer):
     vote_total = serializers.SerializerMethodField(read_only=True)
@@ -17,6 +22,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
             "id": {"read_only": True},
             "boss": {"read_only": True}
         }
+        depth = 1
 
     def validate_name(self, value):
         if not value:
@@ -33,7 +39,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     def get_vote_total(self,obj):
         sum = 0
-        votes = Vote.objects.filter(restaurant=obj)
+        votes = Vote.objects.filter(restaurant=obj,date=datetime.date.today())
         for vote in votes:
             sum += vote.vote
         return {"total_vote":sum}
@@ -48,7 +54,7 @@ class WinnerSerializer(serializers.ModelSerializer):
 
     def get_vote_total(self,obj):
         sum = 0
-        votes = Vote.objects.filter(restaurant=obj.restaurant)
+        votes = Vote.objects.filter(restaurant=obj.restaurant,date=datetime.date.today())
         for vote in votes:
             sum += vote.vote
         return {"total_vote":sum}
@@ -57,4 +63,4 @@ class HistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = History
         fields = ["id","winner"]
-        depth = 1
+        depth = 2

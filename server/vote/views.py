@@ -2,13 +2,13 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Restaurant, Vote, Winner, History
-from .serializers import RestaurantSerializer, VoteSerializer, WinnerSerializer, HistorySerializer
+from .serializers import RestaurantSerializer, VoteSerializer, WinnerSerializer,HistorySerializer
 from authentication.models import Customer,User
 from rest_framework.generics import ListAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 import datetime
-from django.shortcuts import get_object_or_404
+from datetime import timezone
 
 VOTES_PER_DAY = 3
 
@@ -67,7 +67,8 @@ class getVoteResturant(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self,request,restaurant_id, customer_id):
+    def get(self, request, restaurant_id, customer_id):
+        today = timezone.now().date()
         try:
             restaurant = Restaurant.objects.get(id=restaurant_id)
             customer = Customer.objects.get(id=customer_id)
@@ -75,11 +76,15 @@ class getVoteResturant(APIView):
             return Response({"message": "Restaurant not found"}, status=status.HTTP_404_NOT_FOUND)
         except Customer.DoesNotExist:
             return Response({"message": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        vote = Vote.objects.filter(restaurant=restaurant,customer=customer)
-        vote_serializer = VoteSerializer(vote,many=True)
 
-        return Response({"data":vote_serializer.data},status=status.HTTP_200_OK)
+        votes_today = Vote.objects.filter(restaurant=restaurant, customer=customer, date=today)
+        vote_count_today = votes_today.count()
+
+        return Response({
+            "votes_today": VoteSerializer(votes_today, many=True).data,
+            "today_votes_count": vote_count_today,
+            "max_votes_per_day": VOTES_PER_DAY
+        }, status=status.HTTP_200_OK)
 
     def post(self, request, restaurant_id, customer_id):
         try:
@@ -95,7 +100,7 @@ class getVoteResturant(APIView):
         if existing_votes >= VOTES_PER_DAY:
             return Response({"message": "Vote limit reached for today"}, status=status.HTTP_400_BAD_REQUEST)
 
-        previous_votes = Vote.objects.filter(customer=customer, restaurant=restaurant)
+        previous_votes = Vote.objects.filter(customer=customer, restaurant=restaurant,date=today)
         if previous_votes.count() > 0:
             last_vote = previous_votes.last()
             if previous_votes.count() == VOTES_PER_DAY and last_vote.date == today:
@@ -155,22 +160,24 @@ class getRestaurantVoteView(APIView):
             customer = Customer.objects.get(id=customer_id)
         except Customer.DoesNotExist:
             return Response({"message": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)
-        vote = Vote.objects.filter(customer=customer)
+        
+        date = datetime.date.today()
+        vote = Vote.objects.filter(customer=customer,date=date)
         vote_serializer = VoteSerializer(vote, many=True)
         return Response({"data": vote_serializer.data}, status=status.HTTP_200_OK)
     
 class PastHistory(ListAPIView):
-    queryset = History.objects.all()
-    serializer_class = HistorySerializer
-
-
-class CheckVoteStatus(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, restaurant_id):
-        user_id = request.user.id
-        user = User.objects.get(id=user_id)
-        customer = Customer.objects.get(user=user)
-        has_voted = Vote.objects.filter(customer=customer, restaurant_id=restaurant_id).exists()
-        return Response({"has_voted": has_voted}, status=status.HTTP_200_OK)
+    def get(self, request, *args, **kwargs):
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        yesterday_records = History.objects.filter(date=yesterday)
+        yesterday_one = yesterday_records.last() if yesterday_records.exists() else None
+        winner_object = Winner.objects.filter(restaurant__id=yesterday_one.winner.restaurant.id).last()
+        votes = Vote.objects.filter(restaurant__id=yesterday_one.winner.restaurant.id,date=yesterday)
+        
+        sum = 0
+        for vote in votes:
+            sum += vote.vote
+        
+        winner_serializer = WinnerSerializer(winner_object)
+        return Response({"data":{"data":winner_serializer.data,"vote_totel":sum,"date":yesterday}}, status=status.HTTP_200_OK)

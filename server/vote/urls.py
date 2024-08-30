@@ -8,6 +8,4 @@ urlpatterns = [
     path('winners/', views.WinnerHistory.as_view(), name='winner-history'),
     path('customer/<int:customer_id>/',views.getRestaurantVoteView.as_view(),name='get-restaurant-vote'),
     path('history/',views.PastHistory.as_view(),name='get-past-history'),
-    path('customer/vote-status/<int:restaurant_id>/', views.CheckVoteStatus.as_view(), name='check-vote-status'),
-
 ]

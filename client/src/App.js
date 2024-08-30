@@ -12,32 +12,39 @@ import ForgetPassword from './containers/ForgetPassword';
 import SelectRole from './containers/SelectRole';
 import NotFound from './containers/NotFound';
 import ShowRestaurant from './containers/ShowRestaurant';
-import AddNewRestaurent from './containers/AddNewRestaurent';
+import AddNewRestaurant from './containers/AddNewRestaurent';
 import EditRestaurant from './containers/EditRestaurant';
 import AdminShowRestaurant from './containers/AdminShowRestaurant';
 import ShowWinner from './containers/ShowWinner';
 
+import { RestaurantProvider } from './context/RestaurantContext';
+import {  VoteProvider } from './context/VoteContext';
+
 function App() {
   return (
     <Provider store={store}>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<SignUp />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/add/email" element={<AddEmail />} />
-            <Route path="/forget/password" element={<ForgetPassword />} />
-            <Route path="/select/role" element={<SelectRole />} />  
-            <Route path="/show/restaurants" element={<ShowRestaurant />} />  
-            <Route path="/admin/show/restaurants" element={<AdminShowRestaurant />} />
-            <Route path="/add/new/restuarant/:boss_id" element={<AddNewRestaurent />} />                   
-            <Route path="/edit/restuarant/:boss_id/:restaurant_id" element={<EditRestaurant />} />        
-            <Route path="/today/winner" element={<ShowWinner />} />           
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </Router>
+      <RestaurantProvider>
+        <VoteProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/register" element={<SignUp />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/add/email" element={<AddEmail />} />
+              <Route path="/forget/password" element={<ForgetPassword />} />
+              <Route path="/select/role" element={<SelectRole />} />
+              <Route path="/show/restaurants" element={<ShowRestaurant />} />
+              <Route path="/admin/show/restaurants" element={<AdminShowRestaurant />} />
+              <Route path="/add/new/restaurant/:boss_id" element={<AddNewRestaurant />} /> {/* Fixed typo */}
+              <Route path="/edit/restaurant/:boss_id/:restaurant_id" element={<EditRestaurant />} /> {/* Fixed typo */}
+              <Route path="/today/winner" element={<ShowWinner />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </Router>
+        </VoteProvider>
+      </RestaurantProvider>
     </Provider>
   );
 }

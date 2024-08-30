@@ -17,13 +17,6 @@ const Layout = (props) => {
     const state = values.state || null;
     const code = values.code || null;
 
-    console.log('Location:', location);
-    console.log('Query String:', location.search);
-    console.log('Parsed Values:', values);
-    console.log('State:', state);
-    console.log('Code:', code);
-    console.log('Role:', role);
-
     if (state && code) {
       return;
     }else{

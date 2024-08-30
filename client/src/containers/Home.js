@@ -2,9 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Home = () => {
-  const navigate = useNavigate();
-  const role = JSON.parse(localStorage.getItem('role'));
-
+  const role = JSON.parse(localStorage.getItem('role'));  
   return (
     <div>
       <div className="container mt-5">

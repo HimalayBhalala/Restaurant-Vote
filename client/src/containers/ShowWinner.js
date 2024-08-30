@@ -4,8 +4,10 @@ import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 function ShowWinner({isAuthenticated}) {
-    const [getWinner,setWinner] = useState([]);
+    const [getWinner,setWinner] = useState({});
+    const [getHistory,setHistory] = useState({});
     const [getDataStatus,setDataStatus] = useState(true)
+    const [getHistoryStatus,setHistoryStatus] = useState(true)
     const [getShowMore,setShowMore] = useState(false)
 
     const navigate = useNavigate();
@@ -24,7 +26,17 @@ function ShowWinner({isAuthenticated}) {
                     console.log("Error Ocuure during fetching an api",String(error))
                 })
         }
-    },[getDataStatus,isAuthenticated,navigate])
+        if(getHistoryStatus){
+            axios.get(`${process.env.REACT_APP_API_URL}/restaurant/history/`)
+                .then((response) => {
+                    setHistory(response.data.data)
+                    setHistoryStatus(false)
+                })
+                .catch((error) => {
+                    console.log("Error Ocuure during fetching an api",String(error))
+                })
+        }
+    },[getDataStatus,getHistoryStatus,isAuthenticated,navigate])
 
     const ShowMoreWinner = () => {
         setShowMore(true)
@@ -32,7 +44,6 @@ function ShowWinner({isAuthenticated}) {
   
     return (
     <div className='container'>
-        {console.log("winner",getWinner)}
         <h1 className='text-center'>Today's Winner</h1>
         <hr />
         <table className='restaurant-table'>
@@ -71,9 +82,9 @@ function ShowWinner({isAuthenticated}) {
                         </thead>    
                         <tbody>
                             <tr>
-                                <td>{getWinner.restaurant?.name}</td>
-                                <td>{getWinner.vote_total?.total_vote}</td>
-                                <td>{getWinner?.date}</td>   
+                                <td>{getHistory.data.restaurant?.name}</td>
+                                <td>{getHistory?.vote_totel}</td>
+                                <td>{getHistory?.date}</td>   
                             </tr>    
                         </tbody>        
                     </table>

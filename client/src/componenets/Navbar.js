@@ -5,7 +5,8 @@ import { logout } from '../actions/auth';
 
 const Navbar = ({ logout, isAuthenticated }) => {
   const role = JSON.parse(localStorage.getItem('role')) || null;
-  
+  const username = localStorage.getItem('username');
+
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -22,7 +23,7 @@ const Navbar = ({ logout, isAuthenticated }) => {
                 role === 'customer' ? (
                   <div style={{display:"flex"}} className="mt-2">
                     <li>
-                      <Link className='text-center ms-5' style={{color:"white",textDecoration:"none"}} to="/">Welcome Customer</Link>   
+                      <Link className='text-center ms-5' style={{color:"white",textDecoration:"none"}} to="/">Welcome {username}</Link>   
                     </li>
                     <li>
                       <Link className='text-center ms-5' style={{color:"white",textDecoration:"none"}} to="/today/winner">Winner</Link>   
@@ -32,6 +33,9 @@ const Navbar = ({ logout, isAuthenticated }) => {
                   <div style={{display:"flex"}} className="mt-2">
                     <li>
                       <Link className='text-center ms-5' style={{color:"white",textDecoration:"none"}} to="/">Welcome Admin</Link>   
+                    </li>
+                    <li>
+                      <Link className='text-center ms-5' style={{color:"white",textDecoration:"none"}} to="/today/winner">Winner</Link>   
                     </li>
                   </div>
                 )
