@@ -11,7 +11,7 @@ function ShowRestaurant({ isAuthenticated }) {
     const accessToken = localStorage.getItem('access_token');
     const navigate = useNavigate();
     const { restaurantData, setRestaurantData } = useContext(RestaurantContext);
-    const [totalVotesToday, setTotalVotesToday] = useState(0);
+    const [remainingVotes, setRemainingVotes] = useState(3);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -38,13 +38,27 @@ function ShowRestaurant({ isAuthenticated }) {
                     };
                 });
 
-                setTotalVotesToday(votesToday);
+                setRemainingVotes(Math.max(3 - votesToday, 0));
                 setRestaurantData(updatedData);
             }
         };
 
         updateRestaurantVotes();
-    }, [customerId]);
+    }, [restaurantData, customerId, setRestaurantData]);
+
+    const getVoteValue = (voteCount) => {
+        // Define the value based on the vote count
+        switch (voteCount) {
+            case 0:
+                return 1;
+            case 1:
+                return 0.5;
+            case 2:
+                return 0.25;
+            default:
+                return 0;
+        }
+    };
 
     const handleVote = async (restaurantId) => {
         if (!customerId || !accessToken) {
@@ -52,7 +66,7 @@ function ShowRestaurant({ isAuthenticated }) {
             return;
         }
 
-        if (totalVotesToday >= 3) {
+        if (remainingVotes <= 0) {
             alert('You have reached the maximum number of votes for today.');
             return;
         }
@@ -75,13 +89,16 @@ function ShowRestaurant({ isAuthenticated }) {
                 setRestaurantData((prevData) => {
                     const updatedData = prevData.map((restaurant) => {
                         if (restaurant.id === restaurantId) {
+                            const voteCount = restaurant.resturant_vote.length;
+                            const voteValue = getVoteValue(voteCount);
+
                             const updatedVotes = [
                                 ...restaurant.resturant_vote,
                                 {
                                     id: response.data.id,
                                     customer: customerId,
                                     restaurant: restaurantId,
-                                    vote: response.data.vote,
+                                    vote: voteValue,
                                     date: new Date().toISOString(),
                                     customer_name: localStorage.getItem('customer_name'),
                                 },
@@ -90,7 +107,7 @@ function ShowRestaurant({ isAuthenticated }) {
                             return {
                                 ...restaurant,
                                 resturant_vote: updatedVotes,
-                                remaining_votes: totalVotesToday + 1 >= 3 ? 0 : (3 - (totalVotesToday + 1)),
+                                remaining_votes: remainingVotes <= 1 ? 0 : remainingVotes - 1,
                             };
                         }
                         return restaurant;
@@ -99,7 +116,7 @@ function ShowRestaurant({ isAuthenticated }) {
                     return updatedData;
                 });
 
-                setTotalVotesToday((prevCount) => prevCount + 1);
+                setRemainingVotes((prevCount) => Math.max(prevCount - 1, 0));
             }
         } catch (error) {
             if (error.response && error.response.status === 400) {
@@ -115,6 +132,8 @@ function ShowRestaurant({ isAuthenticated }) {
     return (
         <div className="container">
             <h1 className="title">Restaurant List</h1>
+            <hr />
+            <h3 className='text-center'>Remaining Votes: {remainingVotes}</h3>
             <hr />
             {loading ? (
                 <p className="text-center">Loading...</p>
@@ -137,14 +156,14 @@ function ShowRestaurant({ isAuthenticated }) {
                         {restaurantData.map((restaurant, index) => (
                             <tr key={restaurant.id}>
                                 <td className="text-center">{index + 1}</td>
-                                <td className="text-center">{restaurant.name}</td>
-                                <td className="text-center">{restaurant.vote_total.total_vote}</td>
+                                <td className="text-center">{restaurant?.name}</td>
+                                <td className="text-center">{restaurant.vote_total?.total_vote}</td>
                                 <td className="text-center">
-                                    {restaurant.resturant_vote && restaurant.resturant_vote.length > 0 ? (
+                                    {restaurant?.resturant_vote && restaurant.resturant_vote?.length > 0 ? (
                                         <div>
-                                            {restaurant.resturant_vote.map((vote, idx) => (
+                                            {restaurant.resturant_vote?.map((vote, idx) => (
                                                 <div key={idx}>
-                                                    {`Vote: ${vote.vote}, Customer: ${vote.customer_name}, Date: ${new Date(vote.date).toLocaleDateString()}`}
+                                                    {`Vote Value: ${vote.vote}, Customer: ${vote.customer_name}, Date: ${new Date(vote.date).toLocaleDateString()}`}
                                                 </div>
                                             ))}
                                         </div>
@@ -165,9 +184,11 @@ function ShowRestaurant({ isAuthenticated }) {
                     </tbody>
                 </table>
             )}
-            <div className='mt-5' style={{color:"orange"}}>
-                <span><b style={{color:"black"}}>Note:</b> If you have give vote first time in any restaurant so it's value is 1,if you have get vote second time in same restaurant so vote value is 0.5 and if getting third time vote in same restaurant so set it 0.25.</span>
-            </div>
+            {
+                <div className='mt-5' style={{color:"orange"}}>
+                    <span><b style={{color:"black"}}>Note:</b> If you have given a vote the first time in any restaurant, it is valued at 1. If you give a vote the second time in the same restaurant, it is valued at 0.5. If you vote for the third time in the same restaurant, the value is 0.25.</span>
+                </div>
+            }
         </div>
     );
 }
