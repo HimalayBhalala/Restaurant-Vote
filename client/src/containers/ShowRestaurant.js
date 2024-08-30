@@ -44,33 +44,19 @@ function ShowRestaurant({ isAuthenticated }) {
         };
 
         updateRestaurantVotes();
-    }, [restaurantData, customerId, setRestaurantData]);
-
-    const getVoteValue = (voteCount) => {
-        // Define the value based on the vote count
-        switch (voteCount) {
-            case 0:
-                return 1;
-            case 1:
-                return 0.5;
-            case 2:
-                return 0.25;
-            default:
-                return 0;
-        }
-    };
+    }, [customerId]);
 
     const handleVote = async (restaurantId) => {
         if (!customerId || !accessToken) {
             alert('Authentication error. Please log in again.');
             return;
         }
-
+    
         if (remainingVotes <= 0) {
             alert('You have reached the maximum number of votes for today.');
             return;
         }
-
+    
         setLoading(true);
         setError(null);
         try {
@@ -84,26 +70,25 @@ function ShowRestaurant({ isAuthenticated }) {
                     },
                 }
             );
-
+    
             if (response.status === 201) {
+                const newVote = response.data.vote;
+                console.log(response.data.data)
                 setRestaurantData((prevData) => {
                     const updatedData = prevData.map((restaurant) => {
                         if (restaurant.id === restaurantId) {
-                            const voteCount = restaurant.resturant_vote.length;
-                            const voteValue = getVoteValue(voteCount);
-
                             const updatedVotes = [
                                 ...restaurant.resturant_vote,
                                 {
                                     id: response.data.id,
                                     customer: customerId,
                                     restaurant: restaurantId,
-                                    vote: voteValue,
+                                    vote: newVote,
                                     date: new Date().toISOString(),
                                     customer_name: localStorage.getItem('customer_name'),
                                 },
                             ];
-
+    
                             return {
                                 ...restaurant,
                                 resturant_vote: updatedVotes,
@@ -112,11 +97,13 @@ function ShowRestaurant({ isAuthenticated }) {
                         }
                         return restaurant;
                     });
-
+    
                     return updatedData;
                 });
-
+    
                 setRemainingVotes((prevCount) => Math.max(prevCount - 1, 0));
+    
+                alert(`You voted with a value of ${newVote}.`);
             }
         } catch (error) {
             if (error.response && error.response.status === 400) {
@@ -128,6 +115,7 @@ function ShowRestaurant({ isAuthenticated }) {
             setLoading(false);
         }
     };
+    
 
     return (
         <div className="container">
@@ -163,7 +151,7 @@ function ShowRestaurant({ isAuthenticated }) {
                                         <div>
                                             {restaurant.resturant_vote?.map((vote, idx) => (
                                                 <div key={idx}>
-                                                    {`Vote Value: ${vote.vote}, Customer: ${vote.customer_name}, Date: ${new Date(vote.date).toLocaleDateString()}`}
+                                                    {`Vote: ${vote.vote}, Customer: ${vote.customer_name}, Date: ${new Date(vote.date).toLocaleDateString()}`}
                                                 </div>
                                             ))}
                                         </div>
