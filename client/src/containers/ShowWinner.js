@@ -1,104 +1,124 @@
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import { connect } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { connect } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-function ShowWinner({isAuthenticated}) {
-    const [getWinner,setWinner] = useState({});
-    const [getHistory,setHistory] = useState({});
-    const [getDataStatus,setDataStatus] = useState(true)
-    const [getHistoryStatus,setHistoryStatus] = useState(true)
-    const [getShowMore,setShowMore] = useState(false)
+function ShowWinner({ isAuthenticated }) {
+  const [getWinnerData, setWinnerData] = useState([]);
+  const [getHistoryData, setHistoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showMore, setShowMore] = useState(false);
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if(!isAuthenticated){
-            navigate("/login")
-        }
-        if(getDataStatus){
-            axios.get(`${process.env.REACT_APP_API_URL}/restaurant/winners/`)
-                .then((response) => {
-                    setWinner(response.data.data)
-                    setDataStatus(false)
-                })
-                .catch((error) => {
-                    console.log("Error Ocuure during fetching an api",String(error))
-                })
-        }
-        if(getHistoryStatus){
-            axios.get(`${process.env.REACT_APP_API_URL}/restaurant/history/`)
-                .then((response) => {
-                    setHistory(response.data.data)
-                    setHistoryStatus(false)
-                })
-                .catch((error) => {
-                    console.log("Error Ocuure during fetching an api",String(error))
-                })
-        }
-    },[getDataStatus,getHistoryStatus,isAuthenticated,navigate])
-
-    const ShowMoreWinner = () => {
-        setShowMore(true)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
     }
-  
-    return (
-    <div className='container'>
-        <h1 className='text-center'>Today's Winner</h1>
-        <hr />
-        <table className='restaurant-table'>
-            <thead>
-                <tr>
-                    <th>Restaurant Name</th>
-                    <th>Total Votes</th>
-                    <th>Date</th>
-                </tr>    
-            </thead>    
-            <tbody>
-                <tr>
-                    <td>{getWinner.restaurant?.name}</td>
-                    <td>{getWinner.vote_total?.total_vote}</td>
-                    <td>{getWinner?.date}</td>   
-                </tr>    
-            </tbody>        
-        </table>
 
-        <div style={{marginTop:"2rem"}} className='text-center'>
-            <button className='btn btn-primary' onClick={ShowMoreWinner}> 
-                Show More
-            </button>
+    const WinnerData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/restaurant/winners/`
+        );
+        console.log(response.data.data);
+
+        setWinnerData(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error occurred during fetching the API:", {
+          message: error.message,
+          response: error.response ? error.response.data : null,
+        });
+        setError("Error occurred during fetching the API.");
+        setLoading(false);
+      }
+    };
+
+    const HisoryData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/restaurant/history/`
+        );
+        setHistoryData(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error is occurred during fetching the API:", {
+          message: error.message,
+          response: error.response ? error.response.data : null,
+        });
+        setLoading(false);
+      }
+    };
+    WinnerData();
+    if (showMore) {
+      HisoryData();
+    }
+  }, [isAuthenticated, navigate, showMore]);
+
+  const handleShowMore = () => {
+    setShowMore(true);
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
+  return (
+    <div className="container">
+      {console.log("length is", getHistoryData.length)}
+      <h1 className="text-center">Today's Winner</h1>
+      <hr />
+      <table className="restaurant-table">
+        <thead>
+          <tr>
+            <th>Restaurant Name</th>
+            <th>Total Votes</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{getWinnerData.restaurant?.name || "N/A"}</td>
+            <td>{getWinnerData.vote_total?.total_vote || "N/A"}</td>
+            <td>{getWinnerData.date || "N/A"}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style={{ marginTop: "2rem" }} className="text-center">
+        <button className="btn btn-primary" onClick={handleShowMore}>
+          Show More
+        </button>
+      </div>
+
+      {showMore && (
+        <div style={{ marginTop: "5rem" }}>
+          <table className="restaurant-table">
+            <thead>
+              <tr>
+                <th>Restaurant Name</th>
+                <th>Total Votes</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{getHistoryData.winner?.restaurant.name || "N/A"}</td>
+                <td>{getHistoryData?.vote_total || "N/A"}</td>
+                <td>{getHistoryData?.date || "N/A"}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        
-        {
-            getShowMore ? (
-                <div style={{marginTop:"5rem"}}>
-                     <table className='restaurant-table'>
-                        <thead>
-                            <tr>
-                                <th>Restaurant Name</th>
-                                <th>Total Votes</th>
-                                <th>Date</th>
-                            </tr>    
-                        </thead>    
-                        <tbody>
-                            <tr>
-                                <td>{getHistory.data.restaurant?.name}</td>
-                                <td>{getHistory?.vote_totel}</td>
-                                <td>{getHistory?.date}</td>   
-                            </tr>    
-                        </tbody>        
-                    </table>
-                </div>
-            ) : (
-                null
-            )
-        }
+      )}
     </div>
-  )
+  );
 }
 
 const mapStateToProps = (state) => ({
-    isAuthenticated : state.auth.isAuthenticated
-})
+  isAuthenticated: state.auth.isAuthenticated,
+});
 
-export default connect(mapStateToProps)(ShowWinner)
+export default connect(mapStateToProps)(ShowWinner);

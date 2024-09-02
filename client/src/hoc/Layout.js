@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react';
-import Navbar from '../componenets/Navbar';
-import { customer_checkAuthenticated, boss_checkAuthenticated } from '../actions/auth';
-import { connect } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-import queryString from 'query-string';
+import React, { useEffect } from "react";
+import Navbar from "../componenets/Navbar";
+import {
+  customer_checkAuthenticated,
+  boss_checkAuthenticated,
+} from "../actions/auth";
+import { connect } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import queryString from "query-string";
 
 const Layout = (props) => {
   let location = useLocation();
-  const {customer_checkAuthenticated,boss_checkAuthenticated} = props
-  const role = JSON.parse(localStorage.getItem('role'));
+  const { customer_checkAuthenticated, boss_checkAuthenticated } = props;
+  const role = JSON.parse(localStorage.getItem("role"));
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const values = queryString.parse(location.search);
@@ -19,19 +21,24 @@ const Layout = (props) => {
 
     if (state && code) {
       return;
-    }else{
+    } else {
       if (!role) {
-        navigate('/select/role');
-      } else if (role === 'customer') {
+        navigate("/select/role");
+      } else if (role === "customer") {
         customer_checkAuthenticated();
-      } else if (role === 'boss') {
+      } else if (role === "boss") {
         boss_checkAuthenticated();
       } else {
-        navigate('/select/role');
+        navigate("/select/role");
       }
     }
-
-  }, [location, role, navigate, customer_checkAuthenticated, boss_checkAuthenticated]);
+  }, [
+    location,
+    role,
+    navigate,
+    customer_checkAuthenticated,
+    boss_checkAuthenticated,
+  ]);
 
   return (
     <>
@@ -41,4 +48,7 @@ const Layout = (props) => {
   );
 };
 
-export default connect(null, {customer_checkAuthenticated,boss_checkAuthenticated})(Layout);
+export default connect(null, {
+  customer_checkAuthenticated,
+  boss_checkAuthenticated,
+})(Layout);

@@ -13,7 +13,7 @@ from datetime import timezone
 VOTES_PER_DAY = 3
 
 class RestaurantView(APIView):
-    def get(self, request, admin_id, *args, **kwargs):
+    def get(self, request, admin_id,*kwargs):
         restaurant_id = request.query_params.get('restaurant_id', None)
         if restaurant_id:
             try:
@@ -27,14 +27,14 @@ class RestaurantView(APIView):
             serializer = RestaurantSerializer(restaurants, many=True)
             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
-    def post(self, request, admin_id, *args, **kwargs):
+    def post(self, request, admin_id,*kwargs):
         serializer = RestaurantSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(boss_id=admin_id)
             return Response({"data": serializer.data}, status=status.HTTP_201_CREATED)
         return Response({"message": "Restaurant could not be created", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, admin_id, *args, **kwargs):
+    def put(self, request, admin_id, args, *kwargs):
         restaurant_id = request.query_params.get('restaurant_id', None)
         if not restaurant_id:
             return Response({"message": "Restaurant ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -48,7 +48,7 @@ class RestaurantView(APIView):
             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         return Response({"message": "Restaurant could not be updated", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, admin_id, *args, **kwargs):
+    def delete(self, request, admin_id, *kwargs):
         restaurant_id = request.query_params.get('restaurant_id', None)
         if not restaurant_id:
             return Response({"message": "Restaurant ID not provided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -142,7 +142,7 @@ class getVoteResturant(APIView):
             Winner.objects.create(restaurant_id=top_restaurant_id, date=today)
 
 class WinnerHistory(APIView):
-    def get(self, request, *args, **kwargs):
+    def get(self, request,*kwargs):
         latest_winner = Winner.objects.all().order_by("date").latest('id')
         if not latest_winner:
             return Response({"message": "No winners found"}, status=status.HTTP_404_NOT_FOUND)
@@ -165,19 +165,41 @@ class getRestaurantVoteView(APIView):
         vote = Vote.objects.filter(customer=customer,date=date)
         vote_serializer = VoteSerializer(vote, many=True)
         return Response({"data": vote_serializer.data}, status=status.HTTP_200_OK)
-    
-class PastHistory(ListAPIView):
-    def get(self, request, *args, **kwargs):
+
+class PastHistory(APIView):
+    def get(self, request, **kwargs):
         today = datetime.date.today()
-        yesterday = today - datetime.timedelta(days=1)
-        yesterday_records = History.objects.filter(date=yesterday)
-        yesterday_one = yesterday_records.last() if yesterday_records.exists() else None
-        winner_object = Winner.objects.filter(restaurant__id=yesterday_one.winner.restaurant.id).last()
-        votes = Vote.objects.filter(restaurant__id=yesterday_one.winner.restaurant.id,date=yesterday)
-        
-        sum = 0
-        for vote in votes:
-            sum += vote.vote
-        
-        winner_serializer = WinnerSerializer(winner_object)
-        return Response({"data":{"data":winner_serializer.data,"vote_totel":sum,"date":yesterday}}, status=status.HTTP_200_OK)
+        target_date = today - datetime.timedelta(days=1)
+
+        while True:
+            records = History.objects.filter(date=target_date)
+            record = records.last()
+
+            if record:
+                if hasattr(record, 'winner'):
+                    winner = record.winner
+                    restaurant_id = winner.restaurant.id
+                    winner_object = Winner.objects.filter(restaurant__id=restaurant_id).last()
+
+                    if winner_object:
+                        votes = Vote.objects.filter(restaurant__id=restaurant_id, date=target_date)
+                        total_votes = sum(vote.vote for vote in votes)
+
+                        winner_serializer = WinnerSerializer(winner_object)
+
+                        return Response({
+                            "data": {
+                                "winner": winner_serializer.data,
+                                "vote_total": total_votes,
+                                "date": target_date
+                            }
+                        }, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": "No winner associated with the history record."}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                target_date -= datetime.timedelta(days=1)
+
+            if target_date < datetime.date(2024, 1, 1):
+                break
+
+        return Response({"error": "No history found for any previous days."}, status=status.HTTP_404_NOT_FOUND)

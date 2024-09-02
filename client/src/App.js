@@ -18,13 +18,11 @@ import AdminShowRestaurant from './containers/AdminShowRestaurant';
 import ShowWinner from './containers/ShowWinner';
 
 import { RestaurantProvider } from './context/RestaurantContext';
-import {  VoteProvider } from './context/VoteContext';
 
 function App() {
   return (
     <Provider store={store}>
       <RestaurantProvider>
-        <VoteProvider>
         <Router>
           <Layout>
             <Routes>
@@ -43,7 +41,6 @@ function App() {
             </Routes>
           </Layout>
         </Router>
-        </VoteProvider>
       </RestaurantProvider>
     </Provider>
   );
