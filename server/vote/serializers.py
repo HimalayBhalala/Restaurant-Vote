@@ -58,9 +58,3 @@ class WinnerSerializer(serializers.ModelSerializer):
         for vote in votes:
             sum += vote.vote
         return {"total_vote":sum}
-
-class HistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = History
-        fields = ["id","winner"]
-        depth = 2

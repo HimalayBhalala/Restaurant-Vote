@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Restaurant, Vote, Winner, History
-from .serializers import RestaurantSerializer, VoteSerializer, WinnerSerializer,HistorySerializer
+from .serializers import RestaurantSerializer, VoteSerializer, WinnerSerializer
 from authentication.models import Customer,User
 from rest_framework.generics import ListAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
