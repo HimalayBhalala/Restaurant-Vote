@@ -73,7 +73,6 @@ function ShowRestaurant({ isAuthenticated }) {
       );
 
       if (response.status === 201) {
-        const newVote = response.data.vote;
         refetchRestaurantData();
         setRemainingVotes((prevCount) => Math.max(prevCount - 1, 0));
       }

@@ -29,7 +29,7 @@ export default function EditRestaurant() {
         };
 
         fetchRestaurant();
-    }, [getUpdateStaus, restaurant_id,navigate]);
+    }, [getUpdateStaus, restaurant_id,navigate,boss_id]);
 
     const onChange = (e) => setFormData({
         ...formData,
